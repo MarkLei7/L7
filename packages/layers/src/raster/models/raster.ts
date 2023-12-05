@@ -11,12 +11,22 @@ import { IRasterLayerStyleOptions } from '../../core/interface';
 import { RasterImageTriangulation } from '../../core/triangulation';
 import rasterFrag from '../shaders/raster_2d_frag.glsl';
 import rasterVert from '../shaders/raster_2d_vert.glsl';
+import { ShaderLocation } from '../../core/CommonStyleAttribute';
 export default class RasterModel extends BaseModel {
   protected texture: ITexture2D;
   protected colorTexture: ITexture2D;
   public getUninforms() {
+    const commoninfo = this.getCommonUniformsInfo();
+    const attributeInfo = this.getUniformsBufferInfo(this.getStyleAttribute());
+    this.updateStyleUnifoms();
+    return {
+      ...commoninfo.uniformsOption,
+      ...attributeInfo.uniformsOption,
+    }
+
+  }
+  protected getCommonUniformsInfo(): { uniformsArray: number[]; uniformsLength: number; uniformsOption: { [key: string]: any } } {
     const {
-      opacity = 1,
       clampLow = true,
       clampHigh = true,
       noDataValue = -9999999,
@@ -28,8 +38,9 @@ export default class RasterModel extends BaseModel {
       rampColors,
       newdomain,
     );
-    return {
-      u_opacity: opacity || 1,
+
+    const commonOptions = {
+      // u_opacity: opacity || 1,
       u_texture: this.texture,
       u_domain: newdomain,
       u_clampLow: clampLow,
@@ -37,6 +48,9 @@ export default class RasterModel extends BaseModel {
       u_noDataValue: noDataValue,
       u_colorTexture: this.colorTexture,
     };
+    const commonBufferInfo = this.getUniformsBufferInfo(commonOptions);
+
+    return commonBufferInfo;
   }
 
   private async getRasterData(parserDataItem: any) {
@@ -79,6 +93,7 @@ export default class RasterModel extends BaseModel {
       vertexShader: rasterVert,
       fragmentShader: rasterFrag,
       triangulation: RasterImageTriangulation,
+      inject: this.getInject(),
       primitive: gl.TRIANGLES,
       depth: { enable: false },
     });
@@ -86,6 +101,7 @@ export default class RasterModel extends BaseModel {
   }
 
   public async buildModels(): Promise<IModel[]> {
+    this.initUniformsBuffer();//不确定要不要这个
     return this.initModels();
   }
 
@@ -101,6 +117,7 @@ export default class RasterModel extends BaseModel {
       type: AttributeType.Attribute,
       descriptor: {
         name: 'a_Uv',
+        shaderLocation: ShaderLocation.UV,
         buffer: {
           // give the WebGL driver a hint that this buffer may change
           usage: gl.DYNAMIC_DRAW,
