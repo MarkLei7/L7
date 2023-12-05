@@ -1,17 +1,14 @@
-precision mediump float;
 layout(std140) uniform commonUniforms {
- float u_min;
- float u_max;
  vec2 u_domain;
+ float u_opacity;
  float u_noDataValue;
  bool u_clampLow: true;
  bool u_clampHigh: true;
 };
-uniform sampler2D u_texture;
 uniform sampler2D u_colorTexture;
+uniform sampler2D u_texture;
 
 in vec2 v_texCoord;
-in float v_opacity;
 out vec4 outputColor;
 
 bool isnan_emu(float x) { return (x > 0.0 || x < 0.0) ? x != x : x != 0.0; }
@@ -29,7 +26,7 @@ void main() {
     vec4 color = texture(SAMPLER_2D(u_colorTexture),vec2(normalisedValue, 0));
     
     outputColor = color;
-    outputColor.a =  outputColor.a * v_opacity ;
+    outputColor.a =  outputColor.a * u_opacity ;
     if(outputColor.a < 0.01)
       discard;
    

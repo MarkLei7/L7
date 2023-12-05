@@ -22,11 +22,13 @@ export default class RasterModel extends BaseModel {
     return {
       ...commoninfo.uniformsOption,
       ...attributeInfo.uniformsOption,
+      ...{u_texture:this.texture}
     }
 
   }
   protected getCommonUniformsInfo(): { uniformsArray: number[]; uniformsLength: number; uniformsOption: { [key: string]: any } } {
     const {
+      opacity,
       clampLow = true,
       clampHigh = true,
       noDataValue = -9999999,
@@ -40,12 +42,11 @@ export default class RasterModel extends BaseModel {
     );
 
     const commonOptions = {
-      // u_opacity: opacity || 1,
-      u_texture: this.texture,
       u_domain: newdomain,
+      u_opacity: opacity || 1,
+      u_noDataValue: noDataValue,
       u_clampLow: clampLow,
       u_clampHigh: typeof clampHigh !== 'undefined' ? clampHigh : clampLow,
-      u_noDataValue: noDataValue,
       u_colorTexture: this.colorTexture,
     };
     const commonBufferInfo = this.getUniformsBufferInfo(commonOptions);
@@ -87,6 +88,7 @@ export default class RasterModel extends BaseModel {
       type: gl.FLOAT,
       // aniso: 4,
     });
+    this.textures=[this.texture]
 
     const model = await this.layer.buildLayerModel({
       moduleName: 'rasterImageData',

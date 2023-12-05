@@ -8,7 +8,7 @@ export default () => {
   useEffect(() => {
     const scene = new Scene({
       id: 'map',
-      //renderer: 'device',
+      renderer: 'device',
       map: new Map({
         center: [112, 30],
         // zoom: 12,

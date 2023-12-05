@@ -1,8 +1,7 @@
-precision highp float;
 layout(location = 0) in vec3 a_Position;
 layout(std140) uniform commonUniforms {
- mat4 u_ModelMatrix;
  vec4 u_extent;
+ float u_opacity;
  float u_min;
  float u_max;
  float u_width;
@@ -13,7 +12,6 @@ layout(std140) uniform commonUniforms {
 sampler2D u_texture;
 sampler2D u_colorTexture;
 out vec2 v_texCoord;
-out vec4 v_color;
 
 #pragma include "projection"
 void main() {
