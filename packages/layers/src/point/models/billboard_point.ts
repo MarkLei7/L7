@@ -11,6 +11,7 @@ import { IPointLayerStyleOptions } from '../../core/interface';
 import { rgb2arr } from '@antv/l7-utils';
 import simplePointFrag from '../shaders/billboard_point_frag.glsl';
 import simplePointVert from '../shaders/billboard_point_vert.glsl';
+import { ShaderLocation } from '../../core/CommonStyleAttribute';
 
 export function PointTriangulation(feature: IEncodeFeature) {
   const coordinates = feature.coordinates as number[];
@@ -28,6 +29,16 @@ export default class SimplePointModel extends BaseModel {
     };
   }
   public getUninforms(): IModelUniform {
+    const commoninfo = this.getCommonUniformsInfo();
+    const attributeInfo = this.getUniformsBufferInfo(this.getStyleAttribute());
+    this.updateStyleUnifoms();
+    return {
+      ...commoninfo.uniformsOption,
+      ...attributeInfo.uniformsOption,
+    }
+  }
+  protected getCommonUniformsInfo(): { uniformsArray: number[]; uniformsLength: number; uniformsOption: { [key: string]: any } } {
+
     const {
       opacity = 1,
       offsets = [0, 0],
@@ -37,14 +48,17 @@ export default class SimplePointModel extends BaseModel {
       stroke = '#fff',
     } = this.layer.getLayerConfig() as IPointLayerStyleOptions;
 
-    return {
-      u_additive: blend === 'additive' ? 1.0 : 0.0,
-      u_opacity: opacity,
-      u_offsets: offsets,
-      u_stroke_opacity: strokeOpacity,
-      u_stroke_width: strokeWidth,
+    const commonOptions = {
       u_stroke_color: rgb2arr(stroke),
+      u_stroke_width: strokeWidth,
+      u_stroke_opacity: strokeOpacity,
+      u_offsets: offsets,
+     
+      u_additive: blend === 'additive' ? 1.0 : 0.0,    
     };
+    const commonBufferInfo = this.getUniformsBufferInfo(commonOptions);
+
+    return commonBufferInfo;
   }
 
   public async initModels(): Promise<IModel[]> {
@@ -52,6 +66,7 @@ export default class SimplePointModel extends BaseModel {
   }
 
   public async buildModels(): Promise<IModel[]> {
+    this.initUniformsBuffer();
     this.layer.triangulation = PointTriangulation;
 
     const model = await this.layer.buildLayerModel({
@@ -60,6 +75,7 @@ export default class SimplePointModel extends BaseModel {
       fragmentShader: simplePointFrag,
       triangulation: PointTriangulation,
       depth: { enable: false },
+      inject: this.getInject(),
       primitive: gl.POINTS,
     });
     return [model];
@@ -71,6 +87,7 @@ export default class SimplePointModel extends BaseModel {
       type: AttributeType.Attribute,
       descriptor: {
         name: 'a_Size',
+        shaderLocation: ShaderLocation.SIZE,
         buffer: {
           usage: gl.DYNAMIC_DRAW,
           data: [],
