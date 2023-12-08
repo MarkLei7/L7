@@ -3,10 +3,10 @@ layout(location = 11) in vec3 a_Extrude;
 layout(location = 14) in vec2 a_Uv;
 
 layout(std140) uniform commonUniforms {
- mat2 u_RotateMatrix;
  vec2 u_size;
  float u_raisingHeight;
  float u_opacity;
+ float u_radian;
 };
 
 out vec2 v_uv;
@@ -15,6 +15,10 @@ out vec2 v_uv;
 #pragma include "picking"
 void main() {
    vec3 extrude = a_Extrude;
+   // 构建旋转矩阵
+   float cosRadian = cos(u_radian);
+   float sinRadian = sin(u_radian);
+   mat2 u_RotateMatrix = mat2(cosRadian, sinRadian, -sinRadian, cosRadian);
    v_uv = a_Uv;
    float raiseHeight = u_raisingHeight;
    if(u_CoordinateSystem == COORDINATE_SYSTEM_LNGLAT || u_CoordinateSystem == COORDINATE_SYSTEM_LNGLAT_OFFSET) {

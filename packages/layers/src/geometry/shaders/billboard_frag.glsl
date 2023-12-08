@@ -1,8 +1,8 @@
 layout(std140) uniform commonUniforms {
- mat2 u_RotateMatrix;
  vec2 u_size;
  float u_raisingHeight;
  float u_opacity;
+ float u_radian;
 };
 uniform sampler2D u_texture;
 
